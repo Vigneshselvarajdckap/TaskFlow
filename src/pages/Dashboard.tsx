@@ -1,5 +1,5 @@
-import { FiFolder, FiCheckCircle, FiClock, FiUsers } from "react-icons/fi";
 import Layout from "../components/Layout";
+import { FiFolder, FiCheckCircle, FiClock, FiUsers } from "react-icons/fi";
 
 const Dashboard = () => {
   const cards = [
@@ -10,9 +10,8 @@ const Dashboard = () => {
   ];
 
   return (
-      <Layout>
-    <div className="min-h-screen bg-[#020617] text-white p-6">
-      <div className="max-w-7xl mx-auto">
+    <Layout>
+      <div>
         <div className="mb-10">
           <p className="text-slate-400 uppercase tracking-[4px]">
             Project Management
@@ -36,9 +35,7 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-    </div>
-  </Layout>
-
+    </Layout>
   );
 };
 
