@@ -13,6 +13,7 @@ import {
   FiFilter,
 } from "react-icons/fi";
 import toast from "react-hot-toast";
+import { useTheme } from "../context/ThemeContext";
 
 type Status = "Todo" | "In Progress" | "Completed";
 type Priority = "Low" | "Medium" | "High";
@@ -58,8 +59,9 @@ const defaultTasks: Task[] = [
 ];
 
 const Tasks = () => {
+  const { theme, themeName } = useTheme();
+
   const [openModal, setOpenModal] = useState(false);
-  const [draggedTaskId, setDraggedTaskId] = useState<number | null>(null);
   const [editId, setEditId] = useState<number | null>(null);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -71,10 +73,6 @@ const Tasks = () => {
     return savedTasks ? JSON.parse(savedTasks) : defaultTasks;
   });
 
-  useEffect(() => {
-    localStorage.setItem("taskflow_tasks", JSON.stringify(tasks));
-  }, [tasks]);
-
   const [formData, setFormData] = useState({
     title: "",
     project: "",
@@ -84,18 +82,51 @@ const Tasks = () => {
     assignee: "",
   });
 
-  const columns: Status[] = ["Todo", "In Progress", "Completed"];
+  useEffect(() => {
+    localStorage.setItem("taskflow_tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
-  const priorityStyle = {
-    Low: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30",
-    Medium: "bg-[#f5c45e]/10 text-[#f5c45e] border border-[#f5c45e]/30",
-    High: "bg-red-500/10 text-red-400 border border-red-500/30",
+  const getPriorityStyle = (priority: Priority) => {
+    if (priority === "Low") {
+      if (themeName === "emerald")
+        return "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+      if (themeName === "royal")
+        return "bg-violet-500/15 text-violet-300 border border-violet-500/30";
+      if (themeName === "silver")
+        return "bg-zinc-500/15 text-zinc-200 border border-zinc-500/30";
+      return "bg-green-500/15 text-green-300 border border-green-500/30";
+    }
+
+    if (priority === "Medium") {
+      return `bg-gradient-to-r ${theme.gradient} ${theme.accentText}`;
+    }
+
+    return "bg-red-500/15 text-red-300 border border-red-500/30";
   };
 
-  const columnStyle = {
-    Todo: "border-[#2f2412]",
-    "In Progress": "border-[#5c3d0f]",
-    Completed: "border-[#3f3218]",
+  const getStatusStyle = (status: Status) => {
+    if (status === "Todo") {
+      return `bg-gradient-to-r ${theme.gradient} ${theme.accentText}`;
+    }
+
+    if (status === "In Progress") {
+      if (themeName === "emerald")
+        return "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+      if (themeName === "royal")
+        return "bg-purple-500/15 text-purple-300 border border-purple-500/30";
+      if (themeName === "silver")
+        return "bg-zinc-500/15 text-zinc-200 border border-zinc-500/30";
+      return "bg-blue-500/15 text-blue-300 border border-blue-500/30";
+    }
+
+    if (themeName === "emerald")
+      return "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
+    if (themeName === "royal")
+      return "bg-violet-500/15 text-violet-300 border border-violet-500/30";
+    if (themeName === "silver")
+      return "bg-zinc-400/15 text-zinc-200 border border-zinc-400/30";
+
+    return "bg-green-500/15 text-green-300 border border-green-500/30";
   };
 
   const filteredTasks = tasks.filter((task) => {
@@ -208,17 +239,11 @@ const Tasks = () => {
     toast.success("Task deleted");
   };
 
-  const handleDrop = (status: Status) => {
-    if (!draggedTaskId) return;
-
+  const updateStatus = (id: number, status: Status) => {
     setTasks((prev) =>
-      prev.map((task) =>
-        task.id === draggedTaskId ? { ...task, status } : task
-      )
+      prev.map((task) => (task.id === id ? { ...task, status } : task))
     );
-
-    setDraggedTaskId(null);
-    toast.success("Task moved");
+    toast.success("Status updated");
   };
 
   const clearFilters = () => {
@@ -231,34 +256,38 @@ const Tasks = () => {
     <Layout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8">
         <div>
-          <p className="text-[#f5c45e] uppercase tracking-[5px] text-sm">
-            Luxury Workflow
+          <p className={`${theme.accent} uppercase tracking-[5px] text-sm`}>
+            Premium Tasks
           </p>
-          <h1 className="text-5xl font-bold mt-3">Kanban Board</h1>
-          <p className="text-zinc-400 mt-3">
-            Manage tasks with a premium drag & drop experience.
+          <h1 className="text-5xl font-bold mt-3">Manage Tasks</h1>
+          <p className={`${theme.muted} mt-3`}>
+            Create, edit, filter and track your workspace tasks.
           </p>
         </div>
 
         <button
           onClick={openCreateModal}
-          className="bg-gradient-to-r from-[#8a5a13] to-[#f5c45e] text-black px-6 py-4 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition shadow-lg shadow-yellow-500/10"
+          className={`bg-gradient-to-r ${theme.gradient} ${theme.accentText} px-6 py-4 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition`}
         >
           <FiPlus />
           New Task
         </button>
       </div>
 
-      <div className="bg-[#111113] border border-[#2f2412] rounded-3xl p-5 mb-8 shadow-xl shadow-black/30">
+      <div
+        className={`${theme.card} border ${theme.border} rounded-3xl p-5 mb-8 shadow-xl shadow-black/20`}
+      >
         <div className="grid lg:grid-cols-4 gap-4">
           <div className="relative lg:col-span-2">
-            <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <FiSearch
+              className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.muted}`}
+            />
             <input
               type="text"
               placeholder="Search by task, project or assignee..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-[#09090b] border border-[#2f2412] pl-12 p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+              className={`w-full ${theme.inner} border ${theme.border} pl-12 p-4 rounded-2xl outline-none`}
             />
           </div>
 
@@ -267,7 +296,7 @@ const Tasks = () => {
             onChange={(e) =>
               setPriorityFilter(e.target.value as Priority | "All")
             }
-            className="bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+            className={`${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
           >
             <option value="All">All Priorities</option>
             <option value="Low">Low Priority</option>
@@ -278,7 +307,7 @@ const Tasks = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as Status | "All")}
-            className="bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+            className={`${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
           >
             <option value="All">All Status</option>
             <option value="Todo">Todo</option>
@@ -287,112 +316,120 @@ const Tasks = () => {
           </select>
         </div>
 
-        <div className="flex items-center justify-between mt-5 text-sm text-zinc-400">
+        <div className={`flex items-center justify-between mt-5 text-sm ${theme.muted}`}>
           <p className="flex items-center gap-2">
-            <FiFilter className="text-[#f5c45e]" />
+            <FiFilter className={theme.accent} />
             Showing {filteredTasks.length} of {tasks.length} tasks
           </p>
 
-          <button onClick={clearFilters} className="hover:text-[#f5c45e]">
+          <button onClick={clearFilters} className={theme.accent}>
             Clear Filters
           </button>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {columns.map((column) => (
+      <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
+        {filteredTasks.map((task) => (
           <div
-            key={column}
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={() => handleDrop(column)}
-            className={`bg-[#111113] border ${
-              columnStyle[column]
-            } rounded-3xl p-5 min-h-[500px] shadow-xl shadow-black/30`}
+            key={task.id}
+            className={`${theme.card} border ${theme.border} rounded-3xl p-6 shadow-xl shadow-black/20`}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">{column}</h2>
-
-              <span className="bg-[#09090b] border border-[#2f2412] text-[#f5c45e] px-3 py-1 rounded-full text-sm font-bold">
-                {filteredTasks.filter((task) => task.status === column).length}
+            <div className="flex items-center justify-between mb-5">
+              <span
+                className={`text-xs px-3 py-1 rounded-full font-semibold ${getPriorityStyle(
+                  task.priority
+                )}`}
+              >
+                {task.priority}
               </span>
+
+              <FiFlag className={theme.accent} />
             </div>
 
-            <div className="space-y-4">
-              {filteredTasks
-                .filter((task) => task.status === column)
-                .map((task) => (
-                  <div
-                    key={task.id}
-                    draggable
-                    onDragStart={() => setDraggedTaskId(task.id)}
-                    className="bg-gradient-to-br from-[#151515] to-[#0b0b0d] border border-[#2f2412] rounded-2xl p-5 hover:border-[#f5c45e]/70 transition cursor-grab active:cursor-grabbing"
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <span
-                        className={`text-xs px-3 py-1 rounded-full font-semibold ${
-                          priorityStyle[task.priority]
-                        }`}
-                      >
-                        {task.priority}
-                      </span>
+            <h2 className="text-2xl font-bold">{task.title}</h2>
+            <p className={`${theme.muted} mt-2`}>{task.project}</p>
 
-                      <FiFlag className="text-[#f5c45e]" />
-                    </div>
+            <div className={`mt-5 space-y-3 text-sm ${theme.muted}`}>
+              <p className="flex items-center gap-2">
+                <FiCalendar className={theme.accent} />
+                Due: {task.dueDate}
+              </p>
 
-                    <h3 className="text-xl font-bold">{task.title}</h3>
-                    <p className="text-zinc-400 mt-2">{task.project}</p>
+              <p className="flex items-center gap-2">
+                <FiUser className={theme.accent} />
+                Assignee: {task.assignee}
+              </p>
 
-                    <div className="mt-5 space-y-2 text-sm text-zinc-400">
-                      <p className="flex items-center gap-2">
-                        <FiCalendar className="text-[#f5c45e]" />
-                        Due: {task.dueDate}
-                      </p>
+              <p className="flex items-center gap-2 flex-wrap">
+                <FiClock className={theme.accent} />
+                Status:
+                <span
+                  className={`text-xs px-3 py-1 rounded-full font-semibold ${getStatusStyle(
+                    task.status
+                  )}`}
+                >
+                  {task.status}
+                </span>
+              </p>
+            </div>
 
-                      <p className="flex items-center gap-2">
-                        <FiUser className="text-[#f5c45e]" />
-                        Assignee: {task.assignee}
-                      </p>
+            <div className="mt-6 grid grid-cols-3 gap-2">
+              <button
+                onClick={() => updateStatus(task.id, "Todo")}
+                className={`${theme.inner} border ${theme.border} py-2 rounded-xl text-xs hover:opacity-80 transition`}
+              >
+                Todo
+              </button>
 
-                      <p className="flex items-center gap-2">
-                        <FiClock className="text-[#f5c45e]" />
-                        Status: {task.status}
-                      </p>
-                    </div>
+              <button
+                onClick={() => updateStatus(task.id, "In Progress")}
+                className={`${theme.inner} border ${theme.border} py-2 rounded-xl text-xs hover:opacity-80 transition`}
+              >
+                Progress
+              </button>
 
-                    <div className="grid grid-cols-2 gap-3 mt-5">
-                      <button
-                        onClick={() => startEdit(task)}
-                        className="bg-[#f5c45e] text-black py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#ffd978] transition"
-                      >
-                        <FiEdit />
-                        Edit
-                      </button>
+              <button
+                onClick={() => updateStatus(task.id, "Completed")}
+                className={`${theme.inner} border ${theme.border} py-2 rounded-xl text-xs hover:opacity-80 transition`}
+              >
+                Done
+              </button>
+            </div>
 
-                      <button
-                        onClick={() => deleteTask(task.id)}
-                        className="bg-red-500/10 border border-red-500/40 text-red-400 py-2 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition"
-                      >
-                        <FiTrash2 />
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                ))}
+            <div className="grid grid-cols-2 gap-3 mt-5">
+              <button
+                onClick={() => startEdit(task)}
+                className={`bg-gradient-to-r ${theme.gradient} ${theme.accentText} py-3 rounded-xl font-bold flex items-center justify-center gap-2`}
+              >
+                <FiEdit />
+                Edit
+              </button>
 
-              {filteredTasks.filter((task) => task.status === column).length ===
-                0 && (
-                <div className="border border-dashed border-[#2f2412] rounded-2xl p-6 text-center text-zinc-500">
-                  No tasks found
-                </div>
-              )}
+              <button
+                onClick={() => deleteTask(task.id)}
+                className="bg-red-500/10 border border-red-500/40 text-red-400 py-3 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-red-500 hover:text-white transition"
+              >
+                <FiTrash2 />
+                Delete
+              </button>
             </div>
           </div>
         ))}
+
+        {filteredTasks.length === 0 && (
+          <div
+            className={`md:col-span-2 xl:col-span-3 border border-dashed ${theme.border} rounded-3xl p-10 text-center ${theme.muted}`}
+          >
+            No tasks found
+          </div>
+        )}
       </div>
 
       {openModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-6">
-          <div className="bg-[#111113] border border-[#2f2412] rounded-3xl p-8 w-full max-w-lg shadow-2xl shadow-black">
+          <div
+            className={`${theme.card} border ${theme.border} rounded-3xl p-8 w-full max-w-lg shadow-2xl shadow-black`}
+          >
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold">
                 {editId ? "Edit Task" : "Create Task"}
@@ -403,7 +440,7 @@ const Tasks = () => {
                   setOpenModal(false);
                   resetForm();
                 }}
-                className="w-10 h-10 bg-[#09090b] border border-[#2f2412] rounded-xl flex items-center justify-center hover:border-[#f5c45e] transition"
+                className={`w-10 h-10 ${theme.inner} border ${theme.border} rounded-xl flex items-center justify-center`}
               >
                 <FiX />
               </button>
@@ -417,7 +454,7 @@ const Tasks = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+                className={`w-full ${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
               />
 
               <input
@@ -427,7 +464,7 @@ const Tasks = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, project: e.target.value })
                 }
-                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+                className={`w-full ${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
               />
 
               <input
@@ -437,7 +474,7 @@ const Tasks = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, assignee: e.target.value })
                 }
-                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+                className={`w-full ${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
               />
 
               <input
@@ -446,7 +483,7 @@ const Tasks = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, dueDate: e.target.value })
                 }
-                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+                className={`w-full ${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
               />
 
               <select
@@ -457,7 +494,7 @@ const Tasks = () => {
                     priority: e.target.value as Priority,
                   })
                 }
-                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+                className={`w-full ${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
               >
                 <option>Low</option>
                 <option>Medium</option>
@@ -472,7 +509,7 @@ const Tasks = () => {
                     status: e.target.value as Status,
                   })
                 }
-                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
+                className={`w-full ${theme.inner} border ${theme.border} p-4 rounded-2xl outline-none`}
               >
                 <option>Todo</option>
                 <option>In Progress</option>
@@ -481,7 +518,7 @@ const Tasks = () => {
 
               <button
                 onClick={editId ? updateTask : addTask}
-                className="w-full bg-gradient-to-r from-[#8a5a13] to-[#f5c45e] text-black py-4 rounded-2xl font-bold hover:scale-[1.02] transition"
+                className={`w-full bg-gradient-to-r ${theme.gradient} ${theme.accentText} py-4 rounded-2xl font-bold hover:scale-[1.02] transition`}
               >
                 {editId ? "Update Task" : "Create Task"}
               </button>

@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import toast from "react-hot-toast";
 
 type User = {
@@ -8,45 +14,65 @@ type User = {
 
 type AuthContextType = {
   user: User | null;
-  login: (email: string, password: string) => void;
-  signup: (name: string, email: string, password: string) => void;
+  login: (email: string, password: string) => boolean;
+  signup: (name: string, email: string, password: string) => boolean;
   logout: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: any) => {
-  const [user, setUser] = useState<User | null>(null);
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(() => {
+    const savedUser = localStorage.getItem("taskflow_user");
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("taskflow_user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+    if (user) {
+      localStorage.setItem("taskflow_user", JSON.stringify(user));
     }
-  }, []);
+  }, [user]);
 
   const login = (email: string, password: string) => {
     if (!email || !password) {
       toast.error("Please fill all fields");
-      return;
+      return false;
     }
 
-    const userData = { email };
-    localStorage.setItem("taskflow_user", JSON.stringify(userData));
-    setUser(userData);
+    const savedUser = localStorage.getItem("taskflow_user");
+
+    if (savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+
+      if (parsedUser.email !== email) {
+        toast.error("No account found with this email");
+        return false;
+      }
+
+      setUser(parsedUser);
+    } else {
+      const userData = { email };
+      setUser(userData);
+      localStorage.setItem("taskflow_user", JSON.stringify(userData));
+    }
+
     toast.success("Login successful");
+    return true;
   };
 
   const signup = (name: string, email: string, password: string) => {
     if (!name || !email || !password) {
       toast.error("Please fill all fields");
-      return;
+      return false;
     }
 
     const userData = { name, email };
-    localStorage.setItem("taskflow_user", JSON.stringify(userData));
+
     setUser(userData);
+    localStorage.setItem("taskflow_user", JSON.stringify(userData));
+
     toast.success("Account created successfully");
+    return true;
   };
 
   const logout = () => {

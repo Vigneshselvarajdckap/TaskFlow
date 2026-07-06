@@ -21,10 +21,12 @@ const Login = () => {
     password: "",
   });
 
-  const handleLogin = () => {
-    login(formData.email, formData.password);
+const handleLogin = () => {
+  const success = login(formData.email, formData.password);
+  if (success) {
     navigate("/");
-  };
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#09090b] text-white flex items-center justify-center px-4 py-8">
