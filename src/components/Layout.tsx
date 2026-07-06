@@ -6,7 +6,6 @@ import {
   FiCheckSquare,
   FiUsers,
   FiSettings,
-  FiSearch,
   FiBell,
   FiMenu,
   FiX,
@@ -72,14 +71,14 @@ const Layout = ({ children }: any) => {
           <SidebarLinks />
         </div>
 
-        <div className={`${theme.inner} border ${theme.border} rounded-3xl p-5`}>
+        {/* <div className={`${theme.inner} border ${theme.border} rounded-3xl p-5`}>
           <h3 className={`${theme.accent} font-bold mb-2`}>
             Premium Workspace
           </h3>
           <p className={`${theme.muted} text-sm`}>
             Manage projects with luxury productivity experience.
           </p>
-        </div>
+        </div> */}
       </aside>
 
       {menuOpen && (
@@ -126,7 +125,7 @@ const Layout = ({ children }: any) => {
             </h2>
           </div>
 
-          <div className="hidden md:block relative w-full max-w-md">
+          {/* <div className="hidden md:block relative w-full max-w-md">
             <FiSearch className={`absolute left-4 top-1/2 -translate-y-1/2 ${theme.muted}`} />
 
             <input
@@ -134,7 +133,7 @@ const Layout = ({ children }: any) => {
               placeholder="Search anything..."
               className={`w-full ${theme.card} border ${theme.border} rounded-2xl py-3 pl-12 pr-4 outline-none`}
             />
-          </div>
+          </div> */}
 
           <div className="flex items-center gap-4">
             <div className="relative hidden sm:block">
