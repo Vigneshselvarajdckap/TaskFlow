@@ -41,6 +41,21 @@ const Projects = () => {
     members: "",
   });
 
+  const statusStyle: Record<string, string> = {
+    Planning: "bg-[#f5c45e]/10 text-[#f5c45e] border border-[#f5c45e]/30",
+    "In Progress": "bg-blue-500/10 text-blue-400 border border-blue-500/30",
+    Completed: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30",
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      status: "Planning",
+      dueDate: "",
+      members: "",
+    });
+  };
+
   const addProject = () => {
     if (!formData.title || !formData.dueDate || !formData.members) {
       toast.error("Please fill all fields");
@@ -55,14 +70,7 @@ const Projects = () => {
     };
 
     setProjects([newProject, ...projects]);
-
-    setFormData({
-      title: "",
-      status: "Planning",
-      dueDate: "",
-      members: "",
-    });
-
+    resetForm();
     setOpenModal(false);
     toast.success("Project created successfully");
   };
@@ -71,16 +79,20 @@ const Projects = () => {
     <Layout>
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-10">
         <div>
-          <p className="text-slate-400 uppercase tracking-[4px]">Projects</p>
+          <p className="text-[#f5c45e] uppercase tracking-[5px] text-sm">
+            Luxury Projects
+          </p>
+
           <h1 className="text-5xl font-bold mt-3">Manage Projects</h1>
-          <p className="text-slate-400 mt-3">
-            Track all active and completed projects.
+
+          <p className="text-zinc-400 mt-3">
+            Track active, planned and completed projects in style.
           </p>
         </div>
 
         <button
           onClick={() => setOpenModal(true)}
-          className="bg-white text-black px-6 py-4 rounded-2xl font-bold flex items-center gap-2"
+          className="bg-gradient-to-r from-[#8a5a13] to-[#f5c45e] text-black px-6 py-4 rounded-2xl font-bold flex items-center gap-2 hover:scale-105 transition shadow-lg shadow-yellow-500/10"
         >
           <FiPlus />
           New Project
@@ -91,22 +103,26 @@ const Projects = () => {
         {projects.map((project) => (
           <div
             key={project.title}
-            className="bg-[#0f172a] border border-slate-800 rounded-3xl p-6 hover:border-slate-600 transition"
+            className="bg-gradient-to-br from-[#151515] to-[#0b0b0d] border border-[#2f2412] rounded-3xl p-6 hover:border-[#f5c45e]/70 transition shadow-xl shadow-black/30"
           >
-            <span className="text-xs bg-white text-black px-3 py-1 rounded-full font-semibold">
+            <span
+              className={`text-xs px-3 py-1 rounded-full font-semibold ${
+                statusStyle[project.status]
+              }`}
+            >
               {project.status}
             </span>
 
             <h2 className="text-2xl font-bold mt-5">{project.title}</h2>
 
-            <div className="mt-6 space-y-3 text-slate-400">
+            <div className="mt-6 space-y-3 text-zinc-400">
               <p className="flex items-center gap-2">
-                <FiCalendar />
+                <FiCalendar className="text-[#f5c45e]" />
                 {project.dueDate}
               </p>
 
               <p className="flex items-center gap-2">
-                <FiUsers />
+                <FiUsers className="text-[#f5c45e]" />
                 {project.members} Members
               </p>
             </div>
@@ -115,14 +131,17 @@ const Projects = () => {
       </div>
 
       {openModal && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 px-6">
-          <div className="bg-[#0f172a] border border-slate-800 rounded-3xl p-8 w-full max-w-lg">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 px-6">
+          <div className="bg-[#111113] border border-[#2f2412] rounded-3xl p-8 w-full max-w-lg shadow-2xl shadow-black">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold">Create Project</h2>
 
               <button
-                onClick={() => setOpenModal(false)}
-                className="w-10 h-10 bg-[#020617] rounded-xl flex items-center justify-center"
+                onClick={() => {
+                  setOpenModal(false);
+                  resetForm();
+                }}
+                className="w-10 h-10 bg-[#09090b] border border-[#2f2412] rounded-xl flex items-center justify-center hover:border-[#f5c45e] transition"
               >
                 <FiX />
               </button>
@@ -136,7 +155,7 @@ const Projects = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full bg-[#020617] border border-slate-700 p-4 rounded-xl outline-none focus:border-white"
+                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
               />
 
               <select
@@ -144,7 +163,7 @@ const Projects = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value })
                 }
-                className="w-full bg-[#020617] border border-slate-700 p-4 rounded-xl outline-none focus:border-white"
+                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
               >
                 <option>Planning</option>
                 <option>In Progress</option>
@@ -157,7 +176,7 @@ const Projects = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, dueDate: e.target.value })
                 }
-                className="w-full bg-[#020617] border border-slate-700 p-4 rounded-xl outline-none focus:border-white"
+                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
               />
 
               <input
@@ -167,12 +186,12 @@ const Projects = () => {
                 onChange={(e) =>
                   setFormData({ ...formData, members: e.target.value })
                 }
-                className="w-full bg-[#020617] border border-slate-700 p-4 rounded-xl outline-none focus:border-white"
+                className="w-full bg-[#09090b] border border-[#2f2412] p-4 rounded-2xl outline-none focus:border-[#f5c45e] transition"
               />
 
               <button
                 onClick={addProject}
-                className="w-full bg-white text-black py-4 rounded-xl font-bold hover:bg-slate-200 transition"
+                className="w-full bg-gradient-to-r from-[#8a5a13] to-[#f5c45e] text-black py-4 rounded-2xl font-bold hover:scale-[1.02] transition"
               >
                 Create Project
               </button>
